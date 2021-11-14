@@ -7,7 +7,7 @@ node_modules
 /dist
 
 # Boot firebase.js
-/src/firebase.js
+/src/boot/firebase.js
 
 # Cordova related directories and files
 /src-cordova/node_modules

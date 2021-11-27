@@ -5,6 +5,9 @@ const routes = [
     children: [
       { path: "", component: () => import("src/pages/PageHome.vue"), name:"Home" },
       { path: "/about", component: () => import("src/pages/PageAbout.vue"), name:"About" },
+      { path: "/notification", component: () => import("src/pages/PageNotification.vue"), name:"Notifications" },
+      { path: "/search", component: () => import("src/pages/PageSearch.vue"), name:"Search" },
+      { path: "/new-queet", component: () => import("src/pages/PageNewQueet.vue"), name:"New Queet" },
     ],
   },
 

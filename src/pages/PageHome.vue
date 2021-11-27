@@ -1,20 +1,20 @@
 <template>
   <q-page class="relative-position">
     <q-scroll-area class="absolute full-width full-height">
-      <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
+      <div class="q-py-lg q-px-md row items-end q-col-gutter-md gt-sm">
         <div class="col">
           <q-input
             bottom-slots
             v-model="newContent"
             placeholder="What's happening?"
             counter
-            maxlength="280"
+            :maxlength="maxLenghtInput"
             autogrow
             class="new-queet"
           >
             <template v-slot:before>
               <q-avatar size="xl">
-                <img src="https://cdn.quasar.dev/img/avatar5.jpg" />
+                <img src="..\assets\images\heart.jpg" />
               </q-avatar>
             </template>
           </q-input>
@@ -33,7 +33,7 @@
         </div>
       </div>
 
-      <q-separator size="10px" color="grey-2" class="divider" />
+      <q-separator size="10px" color="grey-2" class="divider gt-sm" />
 
       <q-list separator>
         <transition-group
@@ -41,10 +41,14 @@
           enter-active-class="animated fadeIn slow"
           leave-active-class="animated fadeOut slow"
         >
-          <q-item class="queet q-py-md" v-for="queet in queets" :key="queet.id">
+          <q-item
+            class="queet q-py-md"
+            v-for="queet in filterQueet"
+            :key="queet.id"
+          >
             <q-item-section avatar top>
               <q-avatar size="xl">
-                <img src="https://cdn.quasar.dev/img/avatar5.jpg" />
+                <img src="..\assets\images\heart.jpg" />
               </q-avatar>
             </q-item-section>
 
@@ -61,19 +65,29 @@
               </q-item-label>
               <div class="queet-icons row justify-between q-mt-sm">
                 <q-btn
+                  @click="confirmEdit(queet)"
                   flat
                   round
                   color="grey"
                   size="sm"
                   icon="far fa-comment"
-                />
+                >
+                  <q-tooltip transition-show="rotate" transition-hide="rotate">
+                    Edit
+                  </q-tooltip>
+                </q-btn>
                 <q-btn
                   flat
                   round
                   color="grey"
                   size="sm"
                   icon="fas fa-retweet"
-                />
+                  @click="comfirmHide(queet)"
+                >
+                  <q-tooltip transition-show="rotate" transition-hide="rotate">
+                    Hide
+                  </q-tooltip>
+                </q-btn>
                 <q-btn
                   flat
                   round
@@ -81,21 +95,216 @@
                   :color="queet.liked ? 'pink' : 'grey'"
                   size="sm"
                   :icon="queet.liked ? 'fas fa-heart' : 'far fa-heart'"
-                />
+                >
+                  <q-tooltip transition-show="rotate" transition-hide="rotate">
+                    Like
+                  </q-tooltip>
+                </q-btn>
                 <q-btn
                   flat
                   round
                   color="grey"
                   size="sm"
                   icon="fas fa-trash"
-                  @click="deleteQueet(queet)"
-                />
+                  @click="comfirmDelete(queet)"
+                >
+                  <q-tooltip transition-show="rotate" transition-hide="rotate">
+                    Delete
+                  </q-tooltip>
+                </q-btn>
               </div>
             </q-item-section>
           </q-item>
         </transition-group>
       </q-list>
+
+      <q-dialog v-model="isDelete" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <span class="text-h6">Delete Queet?</span>
+          </q-card-section>
+          <q-separator />
+          <q-card-section style="max-width: 70vh">
+            <span
+              >This can’t be undone and it will be removed from your
+              profile.</span
+            >
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat label="Cancel" color="primary" v-close-popup />
+            <q-btn
+              flat
+              label="Delete"
+              color="negative"
+              v-close-popup
+              @click="deleteQueet()"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
+      <q-dialog v-model="isHidden" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <span class="text-h6">Hide Queet?</span>
+          </q-card-section>
+          <q-separator />
+          <q-card-section style="max-width: 70vh">
+            <span
+              >This can’t be undone and it will be hidden from your
+              profile.</span
+            >
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat label="Cancel" color="primary" v-close-popup />
+            <q-btn
+              flat
+              label="Hide"
+              color="negative"
+              v-close-popup
+              @click="hideQueet()"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </q-scroll-area>
+
+    <q-dialog class="gt-sm" v-model="isEdit" no-backdrop-dismiss>
+      <q-card style="width: 600px; max-width: 600px; border-radius: 16px">
+        <q-card-section
+          class="row reverse items-center q-pa-none"
+          style="width: 100%; height: 54px"
+        >
+          <q-btn
+            style="width: 34px; height: 34px"
+            class="q-mr-sm"
+            flat
+            round
+            dense
+            v-close-popup
+          >
+            <q-icon name="close" style="width: 20px; height: 20px" />
+          </q-btn>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pa-none">
+          <div class="row" style="width: 600px">
+            <div style="width: 78px">
+              <q-avatar size="xl" class="col q-pa-md">
+                <img src="..\assets\images\heart.jpg" />
+              </q-avatar>
+            </div>
+
+            <div style="width: 522px">
+              <q-scroll-area style="height: 230px" class="col q-pr-md">
+                <q-input
+                  bottom-slots
+                  v-model="modifyContent"
+                  placeholder="What's happening?"
+                  borderless
+                  autogrow
+                  :maxlength="maxLenghtInput"
+                  class="new-queet"
+                >
+                </q-input>
+              </q-scroll-area>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+        <q-card-actions class="q-pa-none reverse" style="height: 54px">
+          <q-btn
+            to="/"
+            v-close-popup
+            @click="editQueet()"
+            :disable="!modifyContent"
+            unelevated
+            rounded
+            color="primary"
+            label="Save"
+            no-caps
+            class="q-mr-md"
+          />
+          <span v-show="modifyContent" class="line q-mr-md"></span>
+          <span v-show="modifyContent" class="q-mr-md"
+            >{{ modifyContent.length }}/{{ maxLenghtInput }}</span
+          >
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog
+      v-model="isEdit"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+      transition-duration="300"
+      class="lt-md"
+      style="z-index: 1002"
+      maximized
+    >
+      <q-card class="absolute-top">
+        <q-card-section
+          class="row items-center q-pa-none"
+          style="width: 100%; height: 50px"
+        >
+          <q-btn
+            style="width: 34px; height: 34px"
+            class="q-ml-sm"
+            flat
+            round
+            dense
+            v-close-popup
+          >
+            <q-icon
+              name="fas fa-arrow-left"
+              style="width: 20px; height: 20px"
+            />
+          </q-btn>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pa-none scroll edit-dialog">
+          <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
+            <div class="col">
+              <q-input
+                bottom-slots
+                v-model="modifyContent"
+                placeholder="What's happening?"
+                counter
+                :maxlength="maxLenghtInput"
+                autogrow
+                class="new-queet"
+              >
+                <template v-slot:before>
+                  <q-avatar size="xl">
+                    <img src="..\assets\images\heart.jpg" />
+                  </q-avatar>
+                </template>
+              </q-input>
+            </div>
+            <div class="col col-shrink">
+              <q-btn
+                v-close-popup
+                @click="editQueet()"
+                :disable="!modifyContent"
+                unelevated
+                rounded
+                color="primary"
+                label="Save"
+                no-caps
+                class="q-mb-lg"
+              />
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -120,23 +329,70 @@ export default defineComponent({
     return {
       newContent: "",
       queets: [],
+
+      isDelete: false,
+      deleteObj: Object,
+
+      isHidden: false,
+      hiddenObj: Object,
+
+      isEdit: false,
+      modifyObj: Object,
+      modifyContent: "",
+
+      maxLenghtInput: 2000,
     };
   },
+  computed: {
+    filterQueet: function () {
+      let temp = this.queets.filter((x) => x.hidden === false);
+
+      return temp;
+    },
+  },
   methods: {
+    confirmEdit(queet) {
+      this.isEdit = true;
+      this.modifyContent = queet.content;
+      Object.assign(this.modifyObj, queet);
+    },
+    async editQueet() {
+      const dataRef = doc(db, "queet", this.modifyObj.id);
+
+      await updateDoc(dataRef, {
+        content: this.modifyContent,
+      });
+    },
     relativeDate(value) {
       return formatDistance(value, new Date(), { addSuffix: true });
     },
     async addNewQueet() {
       await addDoc(collection(db, "queet"), {
-        content: this.newContent,
+        content: this.newContent.trim(),
         date: Date.now(),
+        hidden: false,
         liked: false,
       });
 
       this.newContent = "";
     },
-    async deleteQueet(queet) {
-      await deleteDoc(doc(db, "queet", queet.id));
+    comfirmHide(queet) {
+      this.isHidden = true;
+      this.hiddenObj = queet;
+    },
+    async hideQueet() {
+      const dataRef = doc(db, "queet", this.hiddenObj.id);
+
+      await updateDoc(dataRef, {
+        hidden: true,
+      });
+    },
+    comfirmDelete(queet) {
+      this.isDelete = true;
+      this.deleteObj = queet;
+    },
+    async deleteQueet() {
+      await deleteDoc(doc(db, "queet", this.deleteObj.id));
     },
     async toggleLiked(queet) {
       const dataRef = doc(db, "queet", queet.id);
@@ -147,7 +403,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    const q = query(collection(db, "queet"), orderBy("date"));
+    const q = query(collection(db, "queet"), orderBy("liked"), orderBy("date"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         let queetChange = change.doc.data();
@@ -174,6 +430,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+.edit-dialog {
+  max-height: calc(100% - 100px);
+}
+
 .new-queet {
   textarea {
     font-size: 19px;
@@ -188,7 +448,7 @@ export default defineComponent({
 }
 
 .queet-content {
-  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .queet-icons {

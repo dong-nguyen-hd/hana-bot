@@ -1,22 +1,28 @@
-# Quitter (quitter)
+# Quitter:<p/>Web app using for writing notes, diaries
 
-Unknown
+This project building on **Quasar - VueJs**, with twitter-based interface.
 
-## Install the dependencies
-```bash
-npm install
-```
+## Technologies
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
+* [Quasar](https://quasar.dev/)
+* [VueJs](https://vuejs.org/)
 
+## Illustration
 
-### Build the app for production
-```bash
-quasar build
-```
+![](/Docs/web.png)
+![](/Docs/mobile.png)
 
-### Customize the configuration
-See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
+## Getting Started
+
+* Following CLI:
+
+1. Setup Firebase in  **src/boot/firebase.js**
+2. Install the dependencies<p/>`npm install`
+* With web version:
+2. Start the app in development mode (hot-code reloading, error reporting, etc.)<p/>`quasar dev`
+3. Build the app for production<p/>`quasar build`
+* With android version (Cordova): follow all steps on [Quasar site](https://quasar.dev/quasar-cli/developing-cordova-apps/preparation#Android-setup)
+
+## License
+* Based on [github](https://github.com/dannyconnell/qwitter) project, thanks for Danny Connell
+* This project is licensed with the [MIT license](LICENSE).

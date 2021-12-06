@@ -3,19 +3,13 @@
     <h4 class="q-mt-none q-mb-md text-weight-bold">About Quitter</h4>
     <div class="text-body1">
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt est
-        fugiat perspiciatis, eius dolore facere quo! Expedita aliquid quaerat
-        quia explicabo, modi dolorum maxime ipsa quis animi sed unde eveniet?
+        Web app using for writing notes, diaries
       </p>
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt est
-        fugiat perspiciatis, eius dolore facere quo! Expedita aliquid quaerat
-        quia explicabo, modi dolorum maxime ipsa quis animi sed unde eveniet?
+        <span class="text-bold">&bull; More information: </span><span class="text-italic text-primary"><a style="text-decoration: none" target="_blank" href="https://github.com/dong-nguyen-hd/quitter">https://github.com/dong-nguyen-hd/quitter</a></span>
       </p>
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt est
-        fugiat perspiciatis, eius dolore facere quo! Expedita aliquid quaerat
-        quia explicabo, modi dolorum maxime ipsa quis animi sed unde eveniet?
+        <span class="text-bold">&bull; License: </span><span>MIT</span>
       </p>
     </div>
   </q-page>

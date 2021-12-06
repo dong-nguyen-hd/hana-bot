@@ -1,41 +1,16 @@
 <template>
-  <q-page class="relative-position">
-    <q-scroll-area class="absolute full-width full-height">
-      <div class="q-py-lg q-px-md row items-end q-col-gutter-md gt-sm">
-        <div class="col">
-          <q-input
-            bottom-slots
-            v-model="newContent"
-            placeholder="What's happening?"
-            counter
-            :maxlength="maxLenghtInput"
-            autogrow
-            class="new-queet"
-          >
-            <template v-slot:before>
-              <q-avatar size="xl">
-                <img src="..\assets\images\heart.jpg" />
-              </q-avatar>
-            </template>
-          </q-input>
-        </div>
-        <div class="col col-shrink">
-          <q-btn
-            @click="addNewQueet"
-            :disable="!newContent"
-            unelevated
-            rounded
-            color="primary"
-            label="Queet"
-            no-caps
-            class="q-mb-lg"
-          />
-        </div>
-      </div>
+  <q-page class="relative-position overflow-hidden">
+    <div class="memories-block">
+      <p class="q-pa-lg text-h5 text-weight-light text-center">
+        {{ filterQueet.length > 0 ? "Memories Today" : "No Memories Today" }}
+      </p>
+    </div>
 
-      <q-separator size="10px" color="grey-2" class="divider gt-sm" />
-
-      <q-list separator>
+    <q-scroll-area
+      class="q-pa-none absolute scroll-block"
+      v-show="filterQueet.length"
+    >
+      <q-list separator v-show="filterQueet.length">
         <transition-group
           appear
           enter-active-class="animated fadeIn slow"
@@ -79,7 +54,7 @@
                 <q-btn
                   flat
                   round
-                  color="grey"
+                  :color="queet.hidden ? 'light-green' : 'grey'"
                   size="sm"
                   icon="fas fa-retweet"
                   @click="comfirmHide(queet)"
@@ -164,7 +139,7 @@
               label="Hide"
               color="negative"
               v-close-popup
-              @click="hideQueet()"
+              @click="hideQueet(true)"
             />
           </q-card-actions>
         </q-card>
@@ -321,17 +296,15 @@ import {
   query,
   orderBy,
   onSnapshot,
-  addDoc,
   deleteDoc,
   doc,
   updateDoc,
 } from "firebase/firestore";
 
 export default defineComponent({
-  name: "PageHome",
+  name: "PageMemories",
   data() {
     return {
-      newContent: "",
       queets: [],
 
       isDelete: false,
@@ -349,12 +322,30 @@ export default defineComponent({
   },
   computed: {
     filterQueet: function () {
-      let temp = this.queets.filter((x) => x.hidden === false);
+      let dateNow = this.convertTimestampToDate(Date.now());
+
+      let temp = this.queets.filter(
+        (x) =>
+          dateNow.day === this.convertTimestampToDate(x.date).day &&
+          dateNow.month === this.convertTimestampToDate(x.date).month &&
+          dateNow.year != this.convertTimestampToDate(x.date).year
+      );
 
       return temp;
     },
   },
   methods: {
+    convertTimestampToDate(timestamp) {
+      let tempTime = new Date(timestamp);
+
+      let timeReturn = {
+        day: tempTime.getDate(),
+        month: tempTime.getMonth(),
+        year: tempTime.getFullYear(),
+      };
+
+      return timeReturn;
+    },
     confirmEdit(queet) {
       this.isEdit = true;
       this.modifyContent = queet.content;
@@ -374,25 +365,17 @@ export default defineComponent({
         ? formatDistanceToNow(value, { addSuffix: true })
         : format(value, "MMM d, y");
     },
-    async addNewQueet() {
-      await addDoc(collection(db, "queet"), {
-        content: this.newContent.trim(),
-        date: Date.now(),
-        hidden: false,
-        liked: false,
-      });
-
-      this.newContent = "";
-    },
-    comfirmHide(queet) {
-      this.isHidden = true;
+    async comfirmHide(queet) {
       this.hiddenObj = queet;
+
+      if (queet.hidden) await this.hideQueet(false);
+      else this.isHidden = true;
     },
-    async hideQueet() {
+    async hideQueet(isHidden) {
       const dataRef = doc(db, "queet", this.hiddenObj.id);
 
       await updateDoc(dataRef, {
-        hidden: true,
+        hidden: isHidden,
       });
     },
     comfirmDelete(queet) {
@@ -408,7 +391,7 @@ export default defineComponent({
       await updateDoc(dataRef, {
         liked: !queet.liked,
       });
-    }
+    },
   },
   mounted() {
     const q = query(collection(db, "queet"), orderBy("liked"), orderBy("date"));
@@ -438,6 +421,17 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+.memories-block {
+  width: 100%;
+  height: 100px;
+}
+
+.scroll-block {
+  width: 100%;
+  height: calc(100% - 100px);
+  bottom: 0px;
+}
+
 .edit-dialog {
   max-height: calc(100% - 100px);
 }

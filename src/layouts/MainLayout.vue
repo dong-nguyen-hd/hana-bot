@@ -18,7 +18,10 @@
             to="/"
             v-show="$route.path == '/new-queet'"
           >
-            <q-icon name="fas fa-arrow-left" style="width: 20px; height: 20px" />
+            <q-icon
+              name="fas fa-arrow-left"
+              style="width: 20px; height: 20px"
+            />
           </q-btn>
         </q-toolbar-title>
       </q-toolbar>
@@ -38,13 +41,15 @@
               </q-item-section>
             </q-item>
 
-            <q-item to="/notification" clickable v-ripple exact class="col">
+            <q-item to="/memories" clickable v-ripple exact class="col" @click="hasMemory = false">
               <q-item-section avatar>
                 <q-icon
                   name="far fa-bell"
                   style="font-size: 30px !important"
                   class="footer-icon align-center"
-                />
+                >
+                  <div v-show="hasMemory" class="dot-memories dot-mobile"></div
+                ></q-icon>
               </q-item-section>
             </q-item>
 
@@ -96,9 +101,11 @@
           <q-item-section class="text-h6 text-weight-bold">Home</q-item-section>
         </q-item>
 
-        <q-item to="/notification" clickable v-ripple exact class="q-pl-xl">
+        <q-item to="/memories" clickable v-ripple exact class="q-pl-xl" @click="hasMemory = false">
           <q-item-section avatar>
-            <q-icon name="far fa-bell" size="md" />
+            <q-icon name="far fa-bell" size="md">
+              <div v-show="hasMemory" class="dot-memories dot-web"></div>
+            </q-icon>
           </q-item-section>
 
           <q-item-section class="text-h6 text-weight-bold"
@@ -213,8 +220,7 @@
             <q-item-label overline class="text-grey">Title</q-item-label>
             <q-item-label class="text-weight-bold">Something</q-item-label>
             <q-item-label caption
-              >Secondary line text. Lorem ipsum dolor sit amet, consectetur
-              adipiscit elit.</q-item-label
+              >Lorem ipsum, dolor sit amet consectetur adipisicing elit. Optio non tempora debitis ullam explicabo inventore hic repudiandae doloremque esse!</q-item-label
             >
           </q-item-section>
 
@@ -228,8 +234,7 @@
             <q-item-label overline class="text-grey">Title</q-item-label>
             <q-item-label class="text-weight-bold">Something</q-item-label>
             <q-item-label caption
-              >Secondary line text. Lorem ipsum dolor sit amet, consectetur
-              adipiscit elit.</q-item-label
+              >Lorem ipsum, dolor sit amet consectetur adipisicing elit. Optio non tempora debitis ullam explicabo inventore hic repudiandae doloremque esse!</q-item-label
             >
           </q-item-section>
 
@@ -243,8 +248,7 @@
             <q-item-label overline class="text-grey">Title</q-item-label>
             <q-item-label class="text-weight-bold">Something</q-item-label>
             <q-item-label caption
-              >Secondary line text. Lorem ipsum dolor sit amet, consectetur
-              adipiscit elit.</q-item-label
+              >Lorem ipsum, dolor sit amet consectetur adipisicing elit. Optio non tempora debitis ullam explicabo inventore hic repudiandae doloremque esse!</q-item-label
             >
           </q-item-section>
 
@@ -284,6 +288,8 @@ export default {
       diaglogNewQueet: false,
       newContent: "",
       maxLenghtInput: 2000,
+
+      hasMemory: false,
     };
   },
   methods: {
@@ -296,6 +302,29 @@ export default {
 
       this.newContent = "";
     },
+    flagMemories(time) {
+      let dateNow = this.convertTimestampToDate(Date.now());
+
+      if (
+        dateNow.day === this.convertTimestampToDate(time).day &&
+        dateNow.month === this.convertTimestampToDate(time).month &&
+        dateNow.year != this.convertTimestampToDate(time).year
+      )
+        return true;
+
+      return false;
+    },
+    convertTimestampToDate(timestamp) {
+      let tempTime = new Date(timestamp);
+
+      let timeReturn = {
+        day: tempTime.getDate(),
+        month: tempTime.getMonth(),
+        year: tempTime.getFullYear(),
+      };
+
+      return timeReturn;
+    },
   },
   mounted() {
     const q = query(collection(db, "queet"));
@@ -304,7 +333,12 @@ export default {
         let queetChange = change.doc.data();
 
         if (change.type === "added") {
-          console.log("New queet: ", queetChange);
+          console.log("New queet:", queetChange);
+
+          // Set dot-memories on/off
+          if (this.flagMemories(queetChange.date)) {
+            this.hasMemory = true;
+          }
         }
       });
     });
@@ -329,7 +363,7 @@ export default {
 </script>
 
 <style lang="scss">
-.header-layer{
+.header-layer {
   z-index: 1001;
 }
 
@@ -369,5 +403,23 @@ export default {
 .button-add:hover {
   background-color: $primary;
   opacity: 1;
+}
+
+.dot-memories {
+  background-color: $negative;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.dot-web {
+  bottom: 4px;
+  right: 1px;
+}
+
+.dot-mobile {
+  bottom: 11px;
+  right: 30px;
 }
 </style>
